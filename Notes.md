@@ -1151,7 +1151,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### 
+
 
 ## Unions
 
@@ -1191,3 +1191,93 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
   
 
+# C++ 17
+
+- Note: all these features are specific to C++ 17 or newer.
+
+## Structured Bindings
+
+- This allows us handle **multiple return values** much easier.
+
+  ```cpp
+  #include <tuple> 
+  
+  std::tuple<std::string, int> CreateTest() {
+      return { "Test", 24 };
+  }
+  
+  int main() {
+      auto[name, age] = CreateTest(); // create & assign variables in one line
+  }
+  ```
+
+  
+
+## Optional Data
+
+- The **std::optional** library gives us an easier way of dealing with determining if data is present or not.
+
+  - This could be use for something such as checking to ensure that a text file was read in and isn't empty (reduce number of lines in code).
+  - We can also set a default value using the *.value_or()* function, which checks for value and if none found, assigns the parameter.
+
+  ```cpp
+  #include <fstream>
+  #include <optional>
+  
+  std::optional<std::string> ReadFileAsString(const std::string& filepath) {
+      std::ifstream stream(filepath);
+      if (stream) {
+          std::string result;
+          // read file ...
+          stream close;
+          return result; // return std::string that is read from text file
+      }
+      return { }; // if stream obj doesn't exist, return our std::optional
+  }
+  
+  int main() {
+      std::optional<std::string> data = ReadFileAsString("data.txt");
+      std::string value = data.value_or("Not present"); // check for value, if none assign "Not present"
+      std::cout << value;
+      
+      if(data.has_value()) // can also write "if (data)"
+          std::cout << "File read successfully!\n";
+      else
+          std::cout << "File read successfully!\n";
+  }
+  ```
+
+  
+
+## Multiple Types, Single Variable
+
+- The **std::variant** library allows us to not have to worry about the data type we deal with, but have a single variable and decide later.
+
+  - This could be used for command line arguments where we don't know what the user will input.
+  - Note that we have to use *std::get* in order to retrieve the value from the variable.
+  - Variant basically creates a struct for you and allocates enough memory to store either type (adds together all data types sizes).
+
+  ```cpp
+  #include <variant>
+  
+  int main() {
+      std::variant<std::string, int> data;
+      std::cout << sizeof(data) << std::endl; // 32 (4 byte int + 28 byte string)
+      data = "Test";
+      std::cout << std::get<std::string>(data) << "\n"; // get value from data variable
+      if (auto value = std::get_if<std::string(&data)) // get_if returns pointer (nullptr if not string, ptr if is string)
+          std::string& v = *value;
+      data = 2;
+  }
+  ```
+
+
+
+## Multithreading
+
+- The **std::async** library 
+
+  ```cpp
+  ```
+
+  
