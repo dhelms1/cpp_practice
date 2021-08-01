@@ -1189,9 +1189,42 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
+
+
+
+## Singeltons
+
+- A **singleton** is a single instance of a class/struct, mainly used to organize global variables and static functions into one organize section (basically a *namespace*).
+
+  - Mainly used when we have functions that we want to apply to a global set of data that we want to reuse.
+
+  ```cpp
+  class Random {
+  public:
+      Random(const Random&) = delete; // set copy constructor to delete if new instance is attemmpted to be made
+      static Random& Get() { // main code of singleton
+          static Random instance; // instantiate single instance
+          return instance; // return instance
+      }
+      static float Float() { return Get().IFloat(); } // public function to "Get" value from function
+      
+  private:
+      float IFloat() { return m_RandomGenerator; } // internal function that returns class member
+      Random() {} // put constructor as private so it can't be instantiated outside of the class
+      float m_RandomGenerator = 0.5f; // used as our "random" number
+  };
+  
+  
+  int main() {
+  	float number = Random::Float(); // could be Random::Get().Float(); if no internal and static function
+  }
+  ```
+
   
 
-# C++ 17
+
+
+# Advanced C++
 
 - Note: all these features are specific to C++ 17 or newer.
 
@@ -1273,11 +1306,173 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Multithreading
+## String Views
 
-- The **std::async** library 
+- The problem with strings is that *std::string* allocates memory on the heap (and this can slow down our program).
+
+- Instead of creating a new sub string if we want to extract a piece of the original string, we can make a **std::string_view**.
+
+  - It is a *const char\** to an existing string, along with the size of the string. Because of this, it won't allocate memory when created (lightweight).
+  
+  ```cpp
+  #define STRING_VIEW 1 // use string view (to not use, change to 0)
+  static uint32_t s_AllocCount = 0;
+  
+  void* operator new(size_t size) { // override new operator (since std::string allocates on heap)
+      s_AllocCount++;
+      std::cout << "Allocating " << size << " bytes\n";
+      return malloc(size);
+  }
+  
+  #if STRING_VIEW
+  void PrintName(const std::string_view name) { 
+      std::cout << name << std::endl;
+  }
+  #else
+  void PrintName(const std::string& name) {
+      std::cout << name << std::endl;
+  }
+  #endif
+  
+  int main() {
+  #if STRING_VIEW
+      std::string name = "Derek Helms"; // creates new string and allocates memory
+      std::string firstName = name.substr(0,5); // creates new string and allocates memory
+      std::string lastName = name.substr(6,5); // creates new string and allocates memory
+  #else
+      const char* name = "Derek Helms"; // no memory allocation
+      std::string_view firstName(name.c_str(), 5); // create view, no memory allocation
+      std::string_view firstName(name.c_str() + 6, 5); // create view, no memory allocation
+  #endif
+      PrintName(name);
+      PrintName(firstName);
+      PrintName(lastName);
+  }
+  ```
+
+- A **small string** varies in sizes depending on the IDE, but in Visual Studio it is a string with less than *15 characters* (_BUF_SIZE - 1).
+  - The difference is that small string get allocated on the *stack* rather than the *heap* (no need to optimize code).
+
+
+
+## lvalues & rvalues
+
+- **lvalues** are variable with a location in memory of the *left side* of the assignment operator.
+
+  - Passing parameters *by reference* is considered to be passing lvalues into functions.
+
+- **rvalues** are the actual value that is being assign on the *right side* of the assignment operator (no storage/location until assigned to lvalue).
+
+  - We can pass by *rvalue reference* in order to take temporary variables into functions.
+
+- Note: below we could write two functions both named PrintName and use function overwriting for the code to choose the right one.
 
   ```cpp
+  void PrintNameL(std::string& name) { // pass by reference - requires lvalue
+      std::cout << name << std::endl;
+  }
+  
+  void PrintNameR(std::string&& name) { // pass by rvalue reference - &&
+      std::cout << name << std::endl;
+  }
+  
+  int main() {
+      std::string firstName = "Derek"; // lvalue - firstName, rvalue - "Derek"
+      std::string lastName = "Helms"; // lvalue - lastName, rvalue - "Helms"
+      std::string fullName = firstName + lastName; // lvalue - fullName, rvalue - "Derek Helms"
+      
+      PrintNameL(fullName); // works since passing by reference & fullName is lvalue
+      PrintNameL(firstName + lastName); // wont work since we are trying to pass rvalue into lvalue function
+      
+      PrintNameR(firstName + lastName); // works since function expects rvalue reference - temporary variable
+      PrintNameR(fullName); // wont work since this is an lvalue
+  }
+  ```
+
+### Move Semantics
+
+- **Move semantics** allows us to move objects around (ex: avoid copying when passing/returning an object from a function).
+
+  ```cpp
+  class String {
+  public:
+      String() = default;
+      String(const char* string) {
+          m_Size = strlen(string);
+          m_Data = new char[m_Size];
+          memcpy(m_Data, string, m_Size);
+      }
+      String(String&& other) noexcept { // rvalue move constructor, no copying
+          m_Size = other.m_Size; // shallow copy size
+          m_Data = other.m_Data; // shallow copy data
+          other.m_Size = 0; // set old string to empty
+          other.m_Data = nullptr; // remove reference
+      }
+      ~String() { delete[] m_Data; }
+  private:
+      char* m_Data;
+      uint32_t m_Size;
+  };
+  
+  class Entity {
+  public:
+      Entity(const String& name) : m_Name(name) { } // creates copy
+      Entity(String&& name) : m_Name((String&& name) { } // takes an rvalue - temporary & no copy
+  private:
+      String m_Name;
+  };
+  
+  
+  int main() {
+      Entity entity("Derek"); // no copies, uses move constructor
+  }
+  ```
+
+### Move Assignment
+
+- Instead of moving an object when creating, we can also use **move assignments** to move objects after being created.
+
+  - We can do this by casting the object we want to move into a *temporary* variable using **std::move**.
+
+- We can **assign** an existing object into another object by using an *assign* operator overload.
+
+  ```cpp
+  class String {
+  public:
+      String() = default;
+      String(const char* string) {
+          m_Size = strlen(string);
+          m_Data = new char[m_Size];
+          memcpy(m_Data, string, m_Size);
+      }
+      String(String&& other) noexcept { // rvalue move constructor, no copying
+          m_Size = other.m_Size; // shallow copy size
+          m_Data = other.m_Data; // shallow copy data
+          other.m_Size = 0; // set old string to empty
+          other.m_Data = nullptr; // remove reference
+      }
+      String& operator=(String&& other) noexpect { // assign operator to move into exisiting variable
+          if (this != &other) { // if object are equal (move into itself), no reassignment needed
+              delete[] m_Data; // delete current object to avoid memory leak
+              m_Size = other.m_Size; // shallow copy size
+              m_Data = other.m_Data; // shallow copy data
+              other.m_Size = 0; // set old string to empty
+              other.m_Data = nullptr; // remove reference
+          }
+          return *this; // return pointer to object
+      }
+      ~String() { delete[] m_Data; } // destructor
+  private:
+      char* m_Data;
+      uint32_t m_Size;
+  };
+  
+  
+  int main() {
+      String apple = "Apple";
+      String dest; // empty object
+      dest = std::move(apple); // move contents of apple into dest (apple is now empty)
+  }
   ```
 
   
