@@ -1475,4 +1475,62 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
+
+
+
+## Iterators
+
+- **Iterators** are used to iterate over a collection of elements.
+
+- The **std::vector** has an *iterator* method which will go from beginning to end of the vector.
+
+  - Note that it also has a *reverse_iterator* which goes from end to beginning for the vector.
+
+  ```cpp
+  int main() {
+      std::vector<int> values = { 1, 2, 3, 4, 5 };
+      
+      for (int value : values)
+          std::cout << value << std::endl;
+      
+      for (int i = 0; i < values.size(); i++)
+          std::cout << values[i] << std::endl;
+      
+      for (std::vector<int>::iterator it = values.begin(); it != values.end(); it++)
+          std::cout << *it << std::endl; // need to derefernce the iterator (get object it points to)
+  }
+  ```
+
+### Unordered Map
+
+- An **unordered map** is basically a hash map that doesn't store it's variables in any order.
+
+  - You need to know the key to get the value, unless you *iterate* through them.
+
+  ```cpp
+  #include <unordered_map>
+  
+  int main() {
+      using ScoreMap = std::unordered_map<std::string, int>; // define data type to avoid long names
+      ScoreMap map;
+      map["Derek"] = 5;
+      map["Helms"] = 2;
+      
+      for (ScoreMap::const_iterator it = map.begin(); it != map.end(); it++) { // using iterators
+          auto& key = it->first;
+          auto& value = it->second;
+          std::cout << key << " = " << value << std::endl;
+      }
+      
+      for (auto kv :: map) { // retrieve an std::pair of (key, value)
+          auto& key = kv.first;
+          auto& value = kv.second;
+          std::cout << key << " = " << value << std::endl;
+      }
+      
+      for (auto [key, value] :: map) // use structured bindings (only for C++17 or newer)
+          std::cout << key << " = " << value << std::endl;
+  }
+  ```
+
   
