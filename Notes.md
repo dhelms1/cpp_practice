@@ -1,46 +1,6 @@
-# C++ Basics
+# Pointers/References
 
-```cpp
-// General Imports
-#include <iostream>
-#define LOG(x) std::cout << x << std::endl // used to print out values
-```
-
-
-
-## Variables
-
-- **int** - 4 bytes of data (32-bits) ranging from +/- 2^31
-- **unsigned int** - 4 bytes of data (32-bits) ranging from 0 to 2^32 (not +/-)
-- **float** - 4 bytes of data (defined with *f*) 
-- **double** - 8 bytes of data (decimal or int)
-- **bool** - 1 byte of data (could define 8 bools in a single point of memory - 8 bytes)
-- **char** - 1 byte of data
-
-*sizeof()* can be used to check the size of variable types.
-
-
-
-## Header Files
-
-These are files that are "copied and pasted" using *#include "name.h"* in the .cpp files 
-
-- **#pragma once** - this prevents us from including a header file multiple times in a single .cpp file
-
-- Another option is to **define** a symbol in the header file:
-
-  ```cpp
-  #ifndef _TMP_EX
-  #define _TMP_EX
-  
-  // code here
-  
-  #endif
-  ```
-
-- Note: we also have something called a **precompiled header**, which imports all header files once instead of recompiling for every cpp file (avoid repeated imports).
-
-## Pointers/References
+## Raw Pointers
 
 - A **pointer** (which is also a variable) contains an address in memory and is allocated on the heap.
 
@@ -122,6 +82,65 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
+## Smart Pointers
+
+- These are ways to automate memory allocation on the heap and deleting them afterwards.
+
+  - When you call *new* you no longer need to call *delete*.
+
+- A **unique pointer** is when you don't want to share it with any other parts of the code (cannot be copied or sent to functions).
+
+- A **shared pointer** works by reference counting (keep track of number of references to the pointer) and is deleted when the count equals 0.
+
+- A **weak pointer** can be used with a *shared pointer* to copy a pointer but not increase the reference count.
+
+  ```cpp
+  #include <memory>
+  
+  class Entity() {
+      //...
+  };
+  
+  int main() {
+      {
+          std::unique_ptr<Entity> e = std::make_unique<Entity>(); // unique pointer
+      	e->Print();
+      } // e will be deleted automatically after leaving this scope
+      
+      {
+          std::shared_ptr<Entity> e0;
+      	{
+          	std::shared_ptr<Entity> sharedEntity = std::make_shared<Entity>();
+              std::weak_ptr<Entity> weakEntity = sharedEntity;
+          	e0 = sharedEntity;
+      	} // sharedEntity pointer will be deleted, but e0 will still point to address (ref count = 1)
+      } // e0 will be deleted, now the destuctor is called (ref count = 0)
+  }
+  ```
+
+
+
+# Loops
+
+## Ternary Operators
+
+- The **ternary operator** allows if/else statements to be reduced into a single line of code.
+
+  - Note: these operators can be nested within each other (as well as including logical operators) - try to avoid this though.
+
+  ```cpp
+  static int s_Level = 1;
+  static int s_Speed = 2;
+  
+  int main() {   
+      s_Speed = s_Level > 5 ? 10 : 5;
+      s_Speed = s_Level > 5 ? s_Level > 10 ? 15 : 10 : 5; // [if level > 5 then] (if level > 10 then 15 else 10) [else 5]
+  }
+  ```
+
+
+
+
 
 
 
@@ -160,7 +179,12 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
+- **Visibility** determines who can access variables/methods within a class.
+  - Private (class default) - only within the class can access the variables/functions (note: a *friend* can access private members of class).
+  - Protected - the class and any subclasses can access the variables/functions (but not outside of the classes).
+  - Public (struct default) - variables/functions can be accessed both within classes and outside of them.
 
+  
 
 ## Static
 
@@ -413,22 +437,10 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-  
-
-## Visibility
-
-- **Visibility** determines who can access variables/methods within a class.
-- Private (class default) - only within the class can access the variables/functions (note: a *friend* can access private members of class).
-- Protected - the class and any subclasses can access the variables/functions (but not outside of the classes).
-- Public (struct default) - variables/functions can be accessed both within classes and outside of them.
 
 
 
-
-
-# Intermediate C++
-
-## Arrays
+# Arrays
 
 - An **array** is just a pointer to a specified size block of memory that has been allocated.
 
@@ -447,7 +459,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Static Arrays
+## Static Arrays
 
 - In *C++ 11* there is a library for **standard arrays**, which are predetermined size and cannot be changed after declaration (constant) - stored on the stack.
 
@@ -463,7 +475,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Dynamic Arrays (vector)
+## Dynamic Arrays (vector)
 
 - A **dynamic array** does not need to have a specified size (you can add elements after declaration). 
 
@@ -499,7 +511,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Multidimensional Arrays
+## Multidimensional Arrays
 
 - **2D arrays**: in the definition, we create a pointer to an int pointer. Below, we allocate 20 bytes of memory (5 int pointers, 4 bytes each).
 
@@ -519,9 +531,9 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   ```
 
 
-### Sorting
+## Sorting
 
-- We can use the *standard library* to sort an type of iterator we pass into it (default is in ascending order, compares by "a < b").
+- We can use the *std library* to sort an type of iterator we pass into it (default is in ascending order, compares by "a < b").
 
   ```cpp
   #include <vector>
@@ -545,7 +557,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Strings
+# Strings
 
 - The *char* data type is 1 byte, and a **string** is just an array of characters.
 
@@ -566,29 +578,58 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-  
 
-## CONST
+## String Views (C++17)
 
-- We define a **constant** when we don't want our variable to be modified after being declared.
+- The problem with strings is that *std::string* allocates memory on the heap (and this can slow down our program).
 
-- In a **class**, a *constant method* can't modify any class variables (read only method).
+- Instead of creating a new sub string if we want to extract a piece of the original string, we can make a **std::string_view**.
+
+  - It is a *const char\** to an existing string, along with the size of the string. Because of this, it won't allocate memory when created (lightweight).
 
   ```cpp
-  class Entity {
-  private:
-      int m_X, m_Y;
-  public:
-      int GetX() const { return m_X; }
-  };
+  #define STRING_VIEW 1 // use string view (to not use, change to 0)
+  static uint32_t s_AllocCount = 0;
+  
+  void* operator new(size_t size) { // override new operator (since std::string allocates on heap)
+      s_AllocCount++;
+      std::cout << "Allocating " << size << " bytes\n";
+      return malloc(size);
+  }
+  
+  #if STRING_VIEW
+  void PrintName(const std::string_view name) { 
+      std::cout << name << std::endl;
+  }
+  #else
+  void PrintName(const std::string& name) {
+      std::cout << name << std::endl;
+  }
+  #endif
   
   int main() {
-      const int* a = new int; // pointer to a constant int (can't change contents value, can change pointer value)
-      int* const a = new int; // constant pointer to a int  (can't change pointer value, can change contents value)
+  #if STRING_VIEW
+      std::string name = "Derek Helms"; // creates new string and allocates memory
+      std::string firstName = name.substr(0,5); // creates new string and allocates memory
+      std::string lastName = name.substr(6,5); // creates new string and allocates memory
+  #else
+      const char* name = "Derek Helms"; // no memory allocation
+      std::string_view firstName(name.c_str(), 5); // create view, no memory allocation
+      std::string_view firstName(name.c_str() + 6, 5); // create view, no memory allocation
+  #endif
+      PrintName(name);
+      PrintName(firstName);
+      PrintName(lastName);
   }
   ```
 
-### Mutable
+- A **small string** varies in sizes depending on the IDE, but in Visual Studio it is a string with less than *15 characters* (_BUF_SIZE - 1).
+
+  - The difference is that small string get allocated on the *stack* rather than the *heap* (no need to optimize code).
+
+
+
+# Mutable
 
 - Marking a variable as **mutable within a class** means that const methods within a class can actually modify that variable.
 
@@ -618,25 +659,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Ternary Operators
-
-- The **ternary operator** allows if/else statements to be reduced into a single line of code.
-
-  - Note: these operators can be nested within each other (as well as including logical operators) - try to avoid this though.
-
-  ```cpp
-  static int s_Level = 1;
-  static int s_Speed = 2;
-  
-  int main() {   
-      s_Speed = s_Level > 5 ? 10 : 5;
-      s_Speed = s_Level > 5 ? s_Level > 10 ? 15 : 10 : 5; // [if level > 5 then] (if level > 10 then 15 else 10) [else 5]
-  }
-  ```
-
-  
-
-## Creating/Instantiating Objects
+# Creating/Instantiating Objects
 
 - **Stack** objects have an automatic lifespan (only within the scope of their definition).
 
@@ -669,7 +692,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### NEW
+## NEW
 
 - The **new** keyword searches for a block of memory that can be used to store our object in (on the heap).
 
@@ -682,7 +705,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### this
+## this
 
 - The **this** keyword is a pointer to the current object instance that the method belongs to.
 
@@ -699,48 +722,9 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   };
   ```
 
-### 
-
-## Smart Pointers
-
-- These are ways to automate memory allocation on the heap and deleting them afterwards.
-
-  - When you call *new* you no longer need to call *delete*.
-
-- A **unique pointer** is when you don't want to share it with any other parts of the code (cannot be copied or sent to functions).
-
-- A **shared pointer** works by reference counting (keep track of number of references to the pointer) and is deleted when the count equals 0.
-
-- A **weak pointer** can be used with a *shared pointer* to copy a pointer but not increase the reference count.
-
-  ```cpp
-  #include <memory>
-  
-  class Entity() {
-      //...
-  };
-  
-  int main() {
-      {
-          std::unique_ptr<Entity> e = std::make_unique<Entity>(); // unique pointer
-      	e->Print();
-      } // e will be deleted automatically after leaving this scope
-      
-      {
-          std::shared_ptr<Entity> e0;
-      	{
-          	std::shared_ptr<Entity> sharedEntity = std::make_shared<Entity>();
-              std::weak_ptr<Entity> weakEntity = sharedEntity;
-          	e0 = sharedEntity;
-      	} // sharedEntity pointer will be deleted, but e0 will still point to address (ref count = 1)
-      } // e0 will be deleted, now the destuctor is called (ref count = 0)
-  }
-  ```
 
 
-
-
-## Copying
+# Copying (Shallow/Deep)
 
 - Creating a **shallow copy** of an object (*string* & *second*) will mean they point to the same address in memory. When the program finishes running, it will try to call the destructor *twice* and will cause a crash (trying to free memory that is already free). 
 
@@ -796,18 +780,9 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
   
 
-## Libraries
+# Functions
 
-- Watch the following about libraries as needed:
-  - [Static Linking](https://www.youtube.com/watch?v=or1dAmUO8k0&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb&index=49) - linking before creating the executable.
-  - [Dynamic Linking](https://www.youtube.com/watch?v=pLy69V2F_8M&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb&index=50) - linking at the time of running the executable.
-  - [Making/Working with Libraries](https://www.youtube.com/watch?v=Wt4dxDNmDA8&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb&index=51) - creating and linking custom libraries in a project.
-
-
-
-## Functions
-
-### Multiple Return Values
+## Multiple Return Values
 
 - If we need to return multiples values of the same type, we can return an array. But if they are different data types, we have a few options:
 
@@ -831,7 +806,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-  - The final option is to create a **struct** with the desired values and return that from the function.
+  - Another option is to create a **struct** with the desired values and return that from the function.
     - Note: the data type of the function is the struct name, and the return names come from the struct (not the function).
 
   ```cpp
@@ -852,7 +827,25 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Templates
+### Structured Bindings (C++17)
+
+- This allows us handle **multiple return values** much easier.
+
+  ```cpp
+  #include <tuple> 
+  
+  std::tuple<std::string, int> CreateTest() {
+      return { "Test", 24 };
+  }
+  
+  int main() {
+      auto[name, age] = CreateTest(); // create & assign variables in one line
+  }
+  ```
+
+  
+
+## Templates
 
 - A **template** allows us to generalize code to be used with different parameters (such as different data types).
 
@@ -893,7 +886,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   ```
 
 
-### Macros
+## Macros
 
 - We can use the C++ preprocessor to create **macros** for certain operations (automate repeated code). Think of this as a "find & replace" that can also take parameters.
 
@@ -913,7 +906,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Function Pointers
+## Function Pointers
 
 - A **function pointer** is a way to assign a function to a variable (and pass parameters to it).
 
@@ -943,7 +936,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Lambdas
+## Lambdas
 
 - A **lambda** is a way to create a function without having to define it globally (think of this a temporary throw-away function).
 
@@ -964,7 +957,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Namespaces
+# Namespaces
 
 - The purpose of a **namespace** is to avoid naming conflicts.
 
@@ -986,11 +979,9 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-# Advanced C++
+# Speed Optimizing
 
-## Speed Optimizing
-
-### Threads
+## Threads
 
 - **Threads** are a way for us to do multiple tasks in parallel (run chunks of code at the same time).
 
@@ -1021,7 +1012,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Timing
+## Timing (Chrono)
 
 - We can use the **chrono** library to time our code and evaluate the performance/speed of it.
 
@@ -1055,7 +1046,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Benchmarking
+## Benchmarking
 
 - **Benchmarking** is a way which we can evaluate the performance (mainly speed) of our code execution.
 
@@ -1095,9 +1086,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
   
 
-
-
-## Casting
+# Casting
 
 - **Casting** is a way for us to convert between data types.
 
@@ -1112,7 +1101,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Dynamic Casting
+## Dynamic Casting
 
 - **Dynamic casting** is used when we have inheritance (convert from base to subclass, or subclass to base).
 
@@ -1135,7 +1124,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Type Punning
+## Type Punning
 
 - This is a way for use to get around the *type* system in C++. The main way we do this is by getting the type as a *pointer*, and then *casting* it to a different pointer type.
 
@@ -1153,7 +1142,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Unions
+# Unions
 
 - A **union** can only have a single member (occupy one block of memory) at a time.
 
@@ -1192,7 +1181,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Singeltons
+# Singletons
 
 - A **singleton** is a single instance of a class/struct, mainly used to organize global variables and static functions into one organize section (basically a *namespace*).
 
@@ -1222,31 +1211,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
   
 
-
-
-# Advanced C++
-
-- Note: all these features are specific to C++ 17 or newer.
-
-## Structured Bindings
-
-- This allows us handle **multiple return values** much easier.
-
-  ```cpp
-  #include <tuple> 
-  
-  std::tuple<std::string, int> CreateTest() {
-      return { "Test", 24 };
-  }
-  
-  int main() {
-      auto[name, age] = CreateTest(); // create & assign variables in one line
-  }
-  ```
-
-  
-
-## Optional Data
+# Optional Data (C++17)
 
 - The **std::optional** library gives us an easier way of dealing with determining if data is present or not.
 
@@ -1282,7 +1247,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
   
 
-## Multiple Types, Single Variable
+# Multiple Types, Single Var (C++17)
 
 - The **std::variant** library allows us to not have to worry about the data type we deal with, but have a single variable and decide later.
 
@@ -1306,56 +1271,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## String Views
-
-- The problem with strings is that *std::string* allocates memory on the heap (and this can slow down our program).
-
-- Instead of creating a new sub string if we want to extract a piece of the original string, we can make a **std::string_view**.
-
-  - It is a *const char\** to an existing string, along with the size of the string. Because of this, it won't allocate memory when created (lightweight).
-  
-  ```cpp
-  #define STRING_VIEW 1 // use string view (to not use, change to 0)
-  static uint32_t s_AllocCount = 0;
-  
-  void* operator new(size_t size) { // override new operator (since std::string allocates on heap)
-      s_AllocCount++;
-      std::cout << "Allocating " << size << " bytes\n";
-      return malloc(size);
-  }
-  
-  #if STRING_VIEW
-  void PrintName(const std::string_view name) { 
-      std::cout << name << std::endl;
-  }
-  #else
-  void PrintName(const std::string& name) {
-      std::cout << name << std::endl;
-  }
-  #endif
-  
-  int main() {
-  #if STRING_VIEW
-      std::string name = "Derek Helms"; // creates new string and allocates memory
-      std::string firstName = name.substr(0,5); // creates new string and allocates memory
-      std::string lastName = name.substr(6,5); // creates new string and allocates memory
-  #else
-      const char* name = "Derek Helms"; // no memory allocation
-      std::string_view firstName(name.c_str(), 5); // create view, no memory allocation
-      std::string_view firstName(name.c_str() + 6, 5); // create view, no memory allocation
-  #endif
-      PrintName(name);
-      PrintName(firstName);
-      PrintName(lastName);
-  }
-  ```
-
-- A **small string** varies in sizes depending on the IDE, but in Visual Studio it is a string with less than *15 characters* (_BUF_SIZE - 1).
-  - The difference is that small string get allocated on the *stack* rather than the *heap* (no need to optimize code).
-
-
-
-## lvalues & rvalues
+# lvalues & rvalues
 
 - **lvalues** are variable with a location in memory of the *left side* of the assignment operator.
 
@@ -1389,7 +1305,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Move Semantics
+## Move Semantics
 
 - **Move semantics** allows us to move objects around (ex: avoid copying when passing/returning an object from a function).
 
@@ -1428,7 +1344,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Move Assignment
+## Move Assignment
 
 - Instead of moving an object when creating, we can also use **move assignments** to move objects after being created.
 
@@ -1478,7 +1394,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
 
 
 
-## Iterators
+# Iterators
 
 - **Iterators** are used to iterate over a collection of elements.
 
@@ -1501,7 +1417,7 @@ These are files that are "copied and pasted" using *#include "name.h"* in the .c
   }
   ```
 
-### Unordered Map
+## Unordered Map
 
 - An **unordered map** is basically a hash map that doesn't store it's variables in any order.
 
