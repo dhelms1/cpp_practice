@@ -525,40 +525,247 @@ int main() {
 ## Linked List
 
 ```cpp
-#include <queue.h>
+#include <iostream>
+#include <vector>
+#include <queue>
 
-class Book { // Parent class
-...
-}
-
-typedef enum {
-  PRE_ORDER;
-  POST_ORDER;
-  IN_ORDER;
-  BREADTH_FIRST;
-}; TraversalOrder;
-
-class Books {
+class BST {
   public:
-    Books() { m_root = NULL; }
-    ~Books() {};
-    void insert (Book *book)
-    bool find(string key, Book *&book);
-    void print();
+    bool isEmpty() { return (m_size == 0); }
+    bool insert(string str) { return insert(str, m_root); }
+    bool find(string str) { return find(str, m_root); }
+    void dft(vector<string> &values) { return dft(values, m_root); }
+    void bft(queue<string> &values) { return bft(values, m_root); }
+    int treeSize() { return m_size; }
+    double average_distance();
+    bool balanced() { return balanced(m_root); }
+    void deleteNodes() { deleteNodes(m_root); m_root = NULL; }
+    void insert_from_vector(vector<string> &elements, int start, int end);
+    int height() { return height(m_root); }
   private:
     class Node {
       public:
-        Node(Book *book) { m_book = book; m_left = NULL; m_right = NULL; }
-        Book *m_book;
-        Node *m_left;
-        Node *m_right;
+        Node(string str) {m_str = str; m_left = NULL; m_right = NULL;}
+        ~Node() { delete m_left; delete m_right; }
+        string m_str;
+        Node *m_left = NULL;
+        Node *m_right = NULL;
     };
-    void insert(Book *book, Node *root); // Declare private version of insert
-    bool find(string key, Book *&book, Node *root); // Declare private version of find
-    void print(Node *);
-    Node *m_root;
+    bool insert(string str, Node *&root);
+    bool find(string str, Node *&root);
+    void dft(vector<string> &values, Node *&root);
+    void bft(queue<string> &values, Node *&root);
+    void average_distance(int cur_distance, int &node_count, int &distance_sum, Node *root);
+    bool balanced(Node *root);
+    void deleteNodes(Node *&root);
+    int height(Node *root);
+    Node *m_root = NULL;
+    int m_size = 0;
+    bool result = false;
 };
 
+bool BST::insert(string str, Node *&root) {
+  if (root == NULL) {
+    root = new Node(str);
+    result = true;
+    m_size++;
+  }
+  else {
+    if (str < root->m_str)
+      this->insert(str, root->m_left);
+    else if (str == root->m_str)
+      result = false;
+    else
+      this->insert(str, root->m_right);
+  }
+  return result;
+}
 
+bool BST::find(string str, Node *&root) {
+  bool result = false;
+  if (root != NULL) {
+    if (str == root->m_str)
+      result = true;
+    else {
+      if (str < root->m_str)
+        result = this->find(str, root->m_left);
+      else
+        result = this->find(str, root->m_right);
+    }
+  }
+  return result;
+}
+
+void BST::dft(vector<string> &values, Node *&root) {
+  if (root != NULL) {
+    this->dft(values, root->m_left);
+    values.push_back(root->m_str);
+    this->dft(values, root->m_right);
+  }
+}
+
+void BST::bft(queue<string> &values, Node *&root) {
+  if (root != NULL) {
+    queue<Node *> temp;
+    temp.push(root);
+    while (temp.empty() == false) {
+      Node *node = temp.front();
+      values.push(node->m_str);
+      temp.pop();
+      if (node->m_left != NULL)
+        temp.push(node->m_left);
+      if (node->m_right != NULL)
+        temp.push(node->m_right);
+    }
+  }
+}
+
+void BST::average_distance(int cur_distance, int &node_count, int &distance_sum, Node *root) {
+  if (root != NULL) {
+    node_count++;
+    distance_sum += cur_distance;
+    if (root->m_left != NULL)
+      average_distance(cur_distance+1, node_count, distance_sum, root->m_left);
+    if (root->m_right != NULL)
+      average_distance(cur_distance+1, node_count, distance_sum, root->m_right);
+  }
+}
+
+double BST::average_distance() {
+  double distance_result = 0.0;
+  if (m_root != NULL) {
+    int node_count = 0, distance_sum = 0, cur_distance = 0;
+    average_distance(cur_distance, node_count, distance_sum, m_root);
+    distance_result = (distance_sum / (double)node_count);
+  }
+  return distance_result;
+}
+
+int BST::height(Node *root) {
+  int result = 0;
+  if (root != NULL) {
+    result = 1 + max(this->height(root->m_left), this->height(root->m_right));
+  }
+  return result;
+}
+
+/* Recursive function to determine if the tree is balanced by calculating
+   the height of each side of the tree and checking if it is height
+   balanced (<=1) and both sub-tree's are also balanced */
+bool BST::balanced(Node *root) {
+  int left_height, right_height;
+  bool result = true;
+  if (root != NULL) {
+    left_height = height(root->m_left);
+    right_height = height(root->m_right);
+    if (abs(left_height-right_height) <= 1 && balanced(root->m_left) && balanced(root->m_right))
+      result = true;
+    else
+      result = false;
+  }
+  return result;
+}
+
+void BST::deleteNodes(Node *&root) {
+  if (root != NULL) {
+    deleteNodes(root->m_left);
+    deleteNodes(root->m_right);
+    free(root);
+  }
+}
+
+void BST::insert_from_vector(vector<string> &elements, int start, int end) {
+  if (start <= end) {
+    if (start == end)
+      insert(elements[start], m_root);
+    else {
+      int middle = round(((start+end)/2));
+      insert(elements[middle], m_root);
+      insert_from_vector(elements, start, middle-1);
+      insert_from_vector(elements, middle+1, end);
+    }
+  }
+}
 ```
+
+
+
+## Traversal (Search)
+
+|        D         |
+| :--------------: |
+|  **B        F**  |
+| **A  C    E  G** |
+
+- **Breadth First** (left to right by levels) - [ D, B, F, A, C, E, G]
+- **Depth First**
+  - *Pre-Order* (node, left, right) - [ D, B, A, C, F, E, G ]
+  - *In-Order* (left, node, right) - [ A, B, C, D, E, F, G ]
+  - *Post-Order* (left, right, node) - [ A, C, B, E, G, F, D]
+
+
+
+
+
+# Algorithms
+
+## Complexity Analysis
+
+- **Space** - the amount of computer memory used.
+- **Time** - how long to execute the algorithm.
+- **Stability** - preserve the ordering of duplicate values.
+- **Worst Case** (upper bound) - O(...)
+- **Best Case** (lower bound) - Omega(...)
+- **Average Case** (lower and upper bound) - Theta(...)
+
+
+
+1. **Quadratic** - O(n^2)
+   - nested loops.
+2. **Constant** - O(1)
+   - only one task to perform.
+3. **Logarithmic** - O(log n)
+   - recursion, binary trees.
+4. **Exponential** - O(2^n)
+   - for example, 1 call in fibonacci creates 2 more (expanding).
+5. **Linear** - O(n)
+   - one scan through list.
+6. **Log Linear** - O(n log n)
+   - merge sort, log on the way down and linear on the way back.
+
+
+
+## Sorting
+
+1. **Bubble Sort** (*compare & swap adjacent*)
+   - Compare two elements and exchange if out of order (do this for each element, iterating by 1).
+   - Tme complexities: 
+     - Worst case is O(n^2)
+     - Best case is O(n) - array already sorted
+   - Slow for large arrays but easy to implement, low memory footprint, stable.
+   - O(1) space complexity.
+2. **Selection Sort** (*scan entire array & swap*)
+   - Locate smallest element in array and exhange with current head element (starting at 0, iterate by 1 each step).
+   - O(n^2) time complexity.
+   - O(1) space complexity.
+   - Stable.
+3. **Insertion Sort** (*scan & shift*)
+   - Take each item from unsorted region and insert into its correct order in sorted region.
+   - O(n^2) time complexity.
+   - O(1) space complexity.
+   - Stable.
+
+4. **Merge Sort** (*divide, conquer, & merge*)
+   - Using recursion, spit list into smaller pieces until size = 1, then on way back put it in order
+   - Time complexity:
+     - While splitting: O(log n)
+     - While merging: O(n log n)
+     - Total: O(n log n)
+   - O(1) space complexity.
+   - Not stable.
+5. **Quick Sort** (*divide, conquer, pivot*)
+   - Right most value is pivot point.
+   - O(n log n) time complexity.
+   - O(1) space complexity.
+   - Not stable.
 
