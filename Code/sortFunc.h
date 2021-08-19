@@ -1,0 +1,52 @@
+#ifndef SORTFUNC_H
+#define SORTFUNC_H
+
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
+#include <time.h>
+#include <numeric>
+#include <algorithm>
+#include <random>
+#include <string>
+#include <chrono>
+
+struct Timer {
+    std::chrono::time_point<std::chrono::steady_clock> start, end;
+    std::chrono::duration<float> duration;
+    
+    Timer() { // constructor
+        start = std::chrono::high_resolution_clock::now();
+    }
+    
+    ~Timer() { // destructor
+        end = std::chrono::high_resolution_clock::now();
+        duration = end - start;
+        float ms = duration.count() * 1000.0f; // convert sec to ms 
+        std::cout << "Sorted in " << ms << "ms." << std::endl;
+    }
+};
+
+void vectorPrint(std::vector<int> &vals) {
+    for (int i = 0; i < vals.size(); i++)
+        std::cout << vals.at(i) << " ";
+    std::cout << std::endl;
+}
+
+void bubbleSort(std::vector<int> &vals) {
+    int num_its = 0;
+    Timer timer; // create timer (destructor prints time in ms)
+    do {
+        for (int i = 0; i < vals.size() - 1; i++) {
+            num_its++;
+            if (vals[i] > vals[i+1]) {
+                int tmp = vals[i+1];
+                vals[i+1] = vals[i];
+                vals[i] = tmp;
+            }
+        }
+    } while (!std::is_sorted(vals.begin(), vals.end()));
+    std::cout << "Bubble Sort: " << num_its << " iterations" << std::endl;
+}
+
+#endif
