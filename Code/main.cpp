@@ -37,6 +37,10 @@ int main() {
             bubbleSort(sortArray);
             incorrectSortMethod = false;
         }
+        else if (userSortMethod == "selection") {
+            selectionSort(sortArray);
+            incorrectSortMethod = false;
+        }
         else if (userSortMethod == "help") {
             for (std::string method : sortMethods)
                 std::cout << method << std::endl;

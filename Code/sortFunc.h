@@ -49,4 +49,25 @@ void bubbleSort(std::vector<int> &vals) {
     std::cout << "Bubble Sort: " << num_its << " iterations" << std::endl;
 }
 
+void selectionSort(std::vector<int> &vals) {
+    int num_its = 0;
+    Timer timer;
+    for (int i = 0; i < vals.size(); i++) {
+        int current_min = vals[i];
+        int min_idx = i;
+        num_its++;
+        for (int j = i+1; j < vals.size(); j++) {
+            if (vals[j] < current_min) {
+                current_min = vals[j];
+                min_idx = j;
+            }
+            num_its++;
+        }
+        int tmp = vals[i]; // get current head value
+        vals[i] = current_min; // move min to head
+        vals[min_idx] = tmp; // set original min idx to old head value
+    }
+    std::cout << "Selection Sort: " << num_its << " iterations" << std::endl;
+}
+
 #endif
