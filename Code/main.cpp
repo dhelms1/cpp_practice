@@ -21,7 +21,7 @@ int main() {
 
     // Print original array
     std::cout << "Initial Array: ";
-    vectorPrint(sortArray);
+    vectorPrint(&sortArray, userArrSize);
 
     // Get user input for sorting method
     bool incorrectSortMethod = true;
@@ -30,15 +30,18 @@ int main() {
         std::cout << "Sorting Method: ";
         std::cin >> userSortMethod;
 
-        std::for_each(userSortMethod.begin(), userSortMethod.end(), [](char &c) {
-            c = std::tolower(c);}); // Convert to lower case
+        std::for_each(userSortMethod.begin(), userSortMethod.end(), [](char &c) {c = std::tolower(c);}); // Convert to lower case
 
         if (userSortMethod == "bubble") {
-            bubbleSort(sortArray);
+            bubbleSort(&sortArray, userArrSize);
             incorrectSortMethod = false;
         }
         else if (userSortMethod == "selection") {
-            selectionSort(sortArray);
+            selectionSort(&sortArray, userArrSize);
+            incorrectSortMethod = false;
+        }
+        else if (userSortMethod == "insertion") {
+            insertionSort(&sortArray, userArrSize);
             incorrectSortMethod = false;
         }
         else if (userSortMethod == "help") {
@@ -52,5 +55,5 @@ int main() {
 
     // Print final sorted array
     std::cout << "Sorted Array: ";
-    vectorPrint(sortArray);
+    vectorPrint(&sortArray, userArrSize);
 }
